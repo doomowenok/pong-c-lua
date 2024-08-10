@@ -50,7 +50,13 @@ void lua_example_call_lua_function(void)
 {
     lua_State* lua = luaL_newstate();
 
-    luaL_dofile(lua, "./scripts/pythagoras.lua");
+    // Error handling from Lua.
+    if(luaL_dofile(lua, "./scripts/pythagoras.lua") != LUA_OK)
+    {
+        luaL_error(lua, "Error: %s\n", lua_tostring(lua, -1));
+        return;
+    }
+
     lua_getglobal(lua, "pythagoras");
 
     if(lua_isfunction(lua, -1))
@@ -61,10 +67,49 @@ void lua_example_call_lua_function(void)
         const int NUM_ARGS = 2;
         const int NUM_RETURNS = 1;
 
-        lua_pcall(lua, NUM_ARGS, NUM_RETURNS, 0);
+        // Error handling from Lua.
+        if(lua_pcall(lua, NUM_ARGS, NUM_RETURNS, 0) != LUA_OK)
+        {
+            luaL_error(lua, "Error: %s\n", lua_tostring(lua, -1));
+            return;
+        }
 
         lua_Number pythagoras_result = lua_tonumber(lua, -1);
         printf("Pythagoras is %f", (float)pythagoras_result);
+    }
+
+    lua_close(lua);
+}
+
+int native_pythagoras(lua_State* L)
+{
+    lua_Number b = lua_tonumber(L, -1); // get the last added parameter from the stack, b
+    lua_Number a = lua_tonumber(L, -2); // get the first added parameter from the stack, a
+    lua_Number result = a * a + b * b;
+    lua_pushnumber(L, result);
+    return 1;   // return how many values the function is returning to the stack
+}
+
+void lua_example_call_c_function(void)
+{
+    lua_State* lua = luaL_newstate();
+
+    lua_pushcfunction(lua, native_pythagoras);
+    lua_setglobal(lua, "native_pythagoras");
+
+    luaL_dofile(lua, "./scripts/pythagoras-native.lua");
+    lua_getglobal(lua, "pythagoras");
+
+    if(lua_isfunction(lua, -1))
+    {
+        lua_pushnumber(lua, 3);
+        lua_pushnumber(lua, 4);
+
+        const int NUM_ARGS = 2;
+        const int NUM_RETURNS = 1;
+        lua_pcall(lua, NUM_ARGS, NUM_RETURNS, 0);
+        lua_Number pythagoras_result = lua_tonumber(lua, -1);
+        printf("Native pythagoras is: %f", (float)pythagoras_result);
     }
 
     lua_close(lua);
@@ -75,7 +120,7 @@ int main(int args, char* arg[])
     // lua_example_dofile();
     // lua_example_getvar();
     // lua_example_stack();
-    lua_example_call_lua_function();
-
+    // lua_example_call_lua_function();
+    lua_example_call_c_function();
     return 0;
 }
