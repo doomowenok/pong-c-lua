@@ -46,10 +46,36 @@ void lua_example_stack(void)
     lua_close(lua);
 }
 
+void lua_example_call_lua_function(void)
+{
+    lua_State* lua = luaL_newstate();
+
+    luaL_dofile(lua, "./scripts/pythagoras.lua");
+    lua_getglobal(lua, "pythagoras");
+
+    if(lua_isfunction(lua, -1))
+    {
+        lua_pushnumber(lua, 3); // 1st function argument, a
+        lua_pushnumber(lua, 4); // 2nd function argument, b
+
+        const int NUM_ARGS = 2;
+        const int NUM_RETURNS = 1;
+
+        lua_pcall(lua, NUM_ARGS, NUM_RETURNS, 0);
+
+        lua_Number pythagoras_result = lua_tonumber(lua, -1);
+        printf("Pythagoras is %f", (float)pythagoras_result);
+    }
+
+    lua_close(lua);
+}
+
 int main(int args, char* arg[])
 {
     // lua_example_dofile();
     // lua_example_getvar();
-    lua_example_stack();
+    // lua_example_stack();
+    lua_example_call_lua_function();
+
     return 0;
 }
