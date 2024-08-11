@@ -115,12 +115,70 @@ void lua_example_call_c_function(void)
     lua_close(lua);
 }
 
+typedef struct rectangle2d
+{
+    int x;
+    int y;
+    int width;
+    int height;
+} rectangle;
+
+int create_rectangle(lua_State* L)
+{
+    rectangle* rect = (rectangle*) lua_newuserdata(L, sizeof(rectangle));
+
+    rect->x = 0;
+    rect->y = 0;
+    rect->width = 0;
+    rect->height = 0;
+
+    return 1;
+}
+
+int change_rectangle_size(lua_State* L)
+{
+    rectangle* rect = (rectangle*) lua_touserdata(L, -3);
+    rect->width = (int) lua_tonumber(L, -2);
+    rect->height = (int) lua_tonumber(L, -1);
+    return 0;
+}
+
+void lua_example_userdata(void)
+{
+    lua_State* lua = luaL_newstate();
+
+    // exposing the native create_rectangle function to Lua
+    lua_pushcfunction(lua, create_rectangle);
+    lua_setglobal(lua, "create_rectangle");
+
+    // exposing the native change_rectangle_size function to Lua
+    lua_pushcfunction(lua, change_rectangle_size);
+    lua_setglobal(lua, "change_rectangle_size");
+
+    luaL_dofile(lua, "./scripts/rectangle.lua");
+
+    lua_getglobal(lua, "square");
+
+    if(lua_isuserdata(lua, -1))
+    {
+        rectangle* r = (rectangle*) lua_touserdata(lua, -1);
+        printf("We got back a rectangle from Lua, width: %d, height: %d.\n", r->width, r->height);
+    }
+    else
+    {
+        printf("We didn't get a rectangle userdata from Lua.");
+    }
+
+    lua_close(lua);
+}
+
 int main(int args, char* arg[])
 {
     // lua_example_dofile();
     // lua_example_getvar();
     // lua_example_stack();
     // lua_example_call_lua_function();
-    lua_example_call_c_function();
+    // lua_example_call_c_function();
+    lua_example_userdata();
     return 0;
 }
