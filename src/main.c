@@ -6,13 +6,18 @@
 
 #define FALSE 0
 #define TRUE 1
+
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
+
+#define FPS 30
+#define FRAME_TIME_LENGTH (1000 / FPS)
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 
 int is_running = FALSE;
+int last_frame_time = 0;
 
 struct player
 {
@@ -84,16 +89,27 @@ void process_input(void)
 
 void update(void)
 {
+    while(!SDL_TICKS_PASSED(SDL_GetTicks(), last_frame_time + FRAME_TIME_LENGTH));
 
+    last_frame_time = SDL_GetTicks();
+
+    player.x += 1;
+    player.y += 1;
 }
 
 void render(void)
 {
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-    SDL_Rect player_rect = { player.x, player.y, player.width, player.height };
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_Rect player_rect =
+        {
+            player.x,
+            player.y,
+            player.width,
+            player.height
+        };
     SDL_RenderFillRect(renderer, &player_rect);
 
     SDL_RenderPresent(renderer);
