@@ -14,6 +14,14 @@ SDL_Renderer* renderer = NULL;
 
 int is_running = FALSE;
 
+struct player
+{
+    float x;
+    float y;
+    float width;
+    float height;
+} player;
+
 int initialize_window(void)
 {
     if(SDL_Init(SDL_INIT_EVERYTHING) != 0)
@@ -47,9 +55,71 @@ int initialize_window(void)
     return TRUE;
 }
 
+void setup(void)
+{
+    player.x = 20;
+    player.y = 20;
+    player.width = 10;
+    player.height = 10;
+}
+
+void process_input(void)
+{
+    SDL_Event event;
+    SDL_PollEvent(&event);
+
+    switch(event.type)
+    {
+        case SDL_QUIT:
+            is_running = FALSE;
+            break;
+        case SDL_KEYDOWN:
+            if(event.key.keysym.sym == SDLK_ESCAPE)
+            {
+                is_running = FALSE;
+            }
+            break;
+    }
+}
+
+void update(void)
+{
+
+}
+
+void render(void)
+{
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+    SDL_Rect player_rect = { player.x, player.y, player.width, player.height };
+    SDL_RenderFillRect(renderer, &player_rect);
+
+    SDL_RenderPresent(renderer);
+}
+
+void destroy_window(void)
+{
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+}
+
 int main(int argc, char* argv[])
 {
     is_running = initialize_window();
+
+    setup();
+
+    while(is_running)
+    {
+        process_input();
+        update();
+        render();
+    }
+
+    destroy_window();
 
     return 0;
 }
