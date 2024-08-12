@@ -91,10 +91,11 @@ void update(void)
 {
     while(!SDL_TICKS_PASSED(SDL_GetTicks(), last_frame_time + FRAME_TIME_LENGTH));
 
+    float delta_time = (SDL_GetTicks() - last_frame_time) / 1000.0f;
     last_frame_time = SDL_GetTicks();
 
-    player.x += 1;
-    player.y += 1;
+    player.x += 20 * delta_time;
+    player.y += 5 * delta_time;
 }
 
 void render(void)
